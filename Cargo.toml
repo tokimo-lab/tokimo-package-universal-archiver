@@ -1,0 +1,32 @@
+[package]
+name = "tokimo-universal-archiver"
+version = "0.1.0"
+edition = "2021"
+description = "Universal archive library supporting all major compression formats with read/write/password/split capabilities"
+license = "MIT"
+repository = "https://github.com/tokimo-lab/tokimo-universal-archiver"
+keywords = ["archive", "compression", "zip", "tar", "7z"]
+categories = ["compression", "filesystem"]
+
+[lib]
+name = "archiver"
+path = "src/lib.rs"
+
+[[bin]]
+name = "archiver-cli"
+path = "src/bin/cli.rs"
+
+[dependencies]
+zip = { version = "2", features = ["aes-crypto", "deflate-zlib", "bzip2", "zstd"] }
+tar = "0.4"
+flate2 = "1"
+bzip2 = "0.5"
+xz2 = "0.1"
+zstd = "0.13"
+sevenz-rust = "0.6"
+unrar = "0.5"
+thiserror = "2"
+chrono = "0.4"
+walkdir = "2"
+clap = { version = "4", features = ["derive"] }
+tempfile = "3"
