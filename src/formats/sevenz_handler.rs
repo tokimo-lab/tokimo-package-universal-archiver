@@ -19,7 +19,7 @@ fn make_entry(name: String, is_dir: bool) -> sevenz_rust::SevenZArchiveEntry {
 impl ArchiveHandler for SevenZHandler {
     fn list(&self, path: &Path, password: Option<&str>) -> Result<Vec<EntryInfo>> {
         let pw = password
-            .map(|p| sevenz_rust::Password::from(p))
+            .map(sevenz_rust::Password::from)
             .unwrap_or_else(sevenz_rust::Password::empty);
 
         let sz = sevenz_rust::SevenZReader::open(path, pw)
@@ -29,7 +29,7 @@ impl ArchiveHandler for SevenZHandler {
         for entry in sz.archive().files.iter() {
             entries.push(EntryInfo {
                 path: entry.name().to_string(),
-                size: entry.size() as u64,
+                size: entry.size(),
                 compressed_size: None,
                 is_dir: entry.is_directory(),
                 modified: None,
@@ -44,7 +44,7 @@ impl ArchiveHandler for SevenZHandler {
         fs::create_dir_all(dest)?;
 
         let pw = password
-            .map(|p| sevenz_rust::Password::from(p))
+            .map(sevenz_rust::Password::from)
             .unwrap_or_else(sevenz_rust::Password::empty);
 
         let mut sz = sevenz_rust::SevenZReader::open(path, pw)
@@ -86,7 +86,7 @@ impl ArchiveHandler for SevenZHandler {
 
     fn preview(&self, path: &Path, entry_name: &str, password: Option<&str>) -> Result<Vec<u8>> {
         let pw = password
-            .map(|p| sevenz_rust::Password::from(p))
+            .map(sevenz_rust::Password::from)
             .unwrap_or_else(sevenz_rust::Password::empty);
 
         let mut sz = sevenz_rust::SevenZReader::open(path, pw)

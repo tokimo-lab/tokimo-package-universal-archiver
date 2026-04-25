@@ -33,5 +33,6 @@ pub(crate) trait ArchiveHandler {
         sources: &[PathBuf],
         password: Option<&str>,
     ) -> Result<()>;
+    #[allow(dead_code)]
     fn supports_password(&self) -> bool;
 }

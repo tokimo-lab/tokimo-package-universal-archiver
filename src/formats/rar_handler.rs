@@ -27,7 +27,7 @@ impl ArchiveHandler for RarHandler {
             let entry = entry.map_err(|e| ArchiveError::FormatError(format!("{:?}", e)))?;
             entries.push(EntryInfo {
                 path: entry.filename.to_string_lossy().to_string(),
-                size: entry.unpacked_size as u64,
+                size: entry.unpacked_size,
                 compressed_size: None,
                 is_dir: entry.is_directory(),
                 modified: None,
@@ -73,7 +73,7 @@ impl ArchiveHandler for RarHandler {
         while let Ok(Some(header)) = cursor.read_header() {
             cursor = if header.entry().is_file() {
                 header
-                    .extract_with_base(&dest)
+                    .extract_with_base(dest)
                     .map_err(|e| ArchiveError::FormatError(format!("{:?}", e)))?
             } else {
                 // Create directory

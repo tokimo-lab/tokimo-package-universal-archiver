@@ -28,7 +28,7 @@ impl ZipHandler {
                         .to_string_lossy()
                         .replace('\\', "/");
                     if entry.file_type().is_dir() {
-                        if rel != "" {
+                        if !rel.is_empty() {
                             files.push((path, format!("{}/", rel)));
                         }
                     } else {
