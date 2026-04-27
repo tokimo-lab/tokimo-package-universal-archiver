@@ -88,13 +88,7 @@ impl ArchiveHandler for RarHandler {
         Ok(())
     }
 
-    fn extract_file(
-        &self,
-        path: &Path,
-        entry_name: &str,
-        dest: &Path,
-        password: Option<&str>,
-    ) -> Result<()> {
+    fn extract_file(&self, path: &Path, entry_name: &str, dest: &Path, password: Option<&str>) -> Result<()> {
         let data = self.preview(path, entry_name, password)?;
         let out_path = dest.join(entry_name);
         if let Some(parent) = out_path.parent() {
@@ -119,27 +113,15 @@ impl ArchiveHandler for RarHandler {
         }
     }
 
-    fn create(
-        &self,
-        _archive_path: &Path,
-        _sources: &[PathBuf],
-        _password: Option<&str>,
-    ) -> Result<()> {
+    fn create(&self, _archive_path: &Path, _sources: &[PathBuf], _password: Option<&str>) -> Result<()> {
         Err(ArchiveError::NotSupported(
-            "RAR creation is not supported (proprietary format). Use 7z or zip instead."
-                .to_string(),
+            "RAR creation is not supported (proprietary format). Use 7z or zip instead.".to_string(),
         ))
     }
 
-    fn add(
-        &self,
-        _archive_path: &Path,
-        _sources: &[PathBuf],
-        _password: Option<&str>,
-    ) -> Result<()> {
+    fn add(&self, _archive_path: &Path, _sources: &[PathBuf], _password: Option<&str>) -> Result<()> {
         Err(ArchiveError::NotSupported(
-            "RAR modification is not supported (proprietary format). Use 7z or zip instead."
-                .to_string(),
+            "RAR modification is not supported (proprietary format). Use 7z or zip instead.".to_string(),
         ))
     }
 

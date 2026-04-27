@@ -17,10 +17,7 @@ impl SingleFileHandler {
     }
 
     fn inner_name(path: &Path) -> String {
-        path.file_stem()
-            .unwrap_or_default()
-            .to_string_lossy()
-            .to_string()
+        path.file_stem().unwrap_or_default().to_string_lossy().to_string()
     }
 
     fn decompress(&self, path: &Path) -> Result<Vec<u8>> {
@@ -42,16 +39,10 @@ impl SingleFileHandler {
                 decoder.read_to_end(&mut data)?;
             }
             ArchiveFormat::Zst => {
-                let mut decoder = zstd::Decoder::new(reader)
-                    .map_err(|e| ArchiveError::FormatError(e.to_string()))?;
+                let mut decoder = zstd::Decoder::new(reader).map_err(|e| ArchiveError::FormatError(e.to_string()))?;
                 decoder.read_to_end(&mut data)?;
             }
-            _ => {
-                return Err(ArchiveError::UnsupportedFormat(format!(
-                    "{}",
-                    self.format
-                )))
-            }
+            _ => return Err(ArchiveError::UnsupportedFormat(format!("{}", self.format))),
         }
 
         Ok(data)
@@ -63,14 +54,12 @@ impl SingleFileHandler {
 
         match self.format {
             ArchiveFormat::Gz => {
-                let mut encoder =
-                    flate2::write::GzEncoder::new(writer, flate2::Compression::default());
+                let mut encoder = flate2::write::GzEncoder::new(writer, flate2::Compression::default());
                 encoder.write_all(data)?;
                 encoder.finish()?;
             }
             ArchiveFormat::Bz2 => {
-                let mut encoder =
-                    bzip2::write::BzEncoder::new(writer, bzip2::Compression::default());
+                let mut encoder = bzip2::write::BzEncoder::new(writer, bzip2::Compression::default());
                 encoder.write_all(data)?;
                 encoder.finish()?;
             }
@@ -80,17 +69,12 @@ impl SingleFileHandler {
                 encoder.finish()?;
             }
             ArchiveFormat::Zst => {
-                let mut encoder = zstd::Encoder::new(writer, 3)
-                    .map_err(|e| ArchiveError::FormatError(e.to_string()))?;
+                let mut encoder =
+                    zstd::Encoder::new(writer, 3).map_err(|e| ArchiveError::FormatError(e.to_string()))?;
                 encoder.write_all(data)?;
                 encoder.finish()?;
             }
-            _ => {
-                return Err(ArchiveError::UnsupportedFormat(format!(
-                    "{}",
-                    self.format
-                )))
-            }
+            _ => return Err(ArchiveError::UnsupportedFormat(format!("{}", self.format))),
         }
 
         Ok(())
@@ -119,13 +103,7 @@ impl ArchiveHandler for SingleFileHandler {
         Ok(())
     }
 
-    fn extract_file(
-        &self,
-        path: &Path,
-        _entry: &str,
-        dest: &Path,
-        password: Option<&str>,
-    ) -> Result<()> {
+    fn extract_file(&self, path: &Path, _entry: &str, dest: &Path, password: Option<&str>) -> Result<()> {
         self.extract_all(path, dest, password)
     }
 
@@ -133,12 +111,7 @@ impl ArchiveHandler for SingleFileHandler {
         self.decompress(path)
     }
 
-    fn create(
-        &self,
-        archive_path: &Path,
-        sources: &[PathBuf],
-        _password: Option<&str>,
-    ) -> Result<()> {
+    fn create(&self, archive_path: &Path, sources: &[PathBuf], _password: Option<&str>) -> Result<()> {
         if sources.len() != 1 || sources[0].is_dir() {
             return Err(ArchiveError::NotSupported(
                 "Single-file compression only supports one file".to_string(),
@@ -150,12 +123,7 @@ impl ArchiveHandler for SingleFileHandler {
         Ok(())
     }
 
-    fn add(
-        &self,
-        _archive_path: &Path,
-        _sources: &[PathBuf],
-        _password: Option<&str>,
-    ) -> Result<()> {
+    fn add(&self, _archive_path: &Path, _sources: &[PathBuf], _password: Option<&str>) -> Result<()> {
         Err(ArchiveError::NotSupported(
             "Cannot add files to single-file compression format".to_string(),
         ))

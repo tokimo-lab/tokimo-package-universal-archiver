@@ -22,8 +22,7 @@ impl ArchiveHandler for SevenZHandler {
             .map(sevenz_rust::Password::from)
             .unwrap_or_else(sevenz_rust::Password::empty);
 
-        let sz = sevenz_rust::SevenZReader::open(path, pw)
-            .map_err(|e| ArchiveError::FormatError(format!("{}", e)))?;
+        let sz = sevenz_rust::SevenZReader::open(path, pw).map_err(|e| ArchiveError::FormatError(format!("{}", e)))?;
 
         let mut entries = Vec::new();
         for entry in sz.archive().files.iter() {
@@ -47,8 +46,8 @@ impl ArchiveHandler for SevenZHandler {
             .map(sevenz_rust::Password::from)
             .unwrap_or_else(sevenz_rust::Password::empty);
 
-        let mut sz = sevenz_rust::SevenZReader::open(path, pw)
-            .map_err(|e| ArchiveError::FormatError(format!("{}", e)))?;
+        let mut sz =
+            sevenz_rust::SevenZReader::open(path, pw).map_err(|e| ArchiveError::FormatError(format!("{}", e)))?;
 
         sz.for_each_entries(|entry, reader| {
             let dest_path = dest.join(entry.name());
@@ -68,13 +67,7 @@ impl ArchiveHandler for SevenZHandler {
         Ok(())
     }
 
-    fn extract_file(
-        &self,
-        path: &Path,
-        entry_name: &str,
-        dest: &Path,
-        password: Option<&str>,
-    ) -> Result<()> {
+    fn extract_file(&self, path: &Path, entry_name: &str, dest: &Path, password: Option<&str>) -> Result<()> {
         let data = self.preview(path, entry_name, password)?;
         let out_path = dest.join(entry_name);
         if let Some(parent) = out_path.parent() {
@@ -89,8 +82,8 @@ impl ArchiveHandler for SevenZHandler {
             .map(sevenz_rust::Password::from)
             .unwrap_or_else(sevenz_rust::Password::empty);
 
-        let mut sz = sevenz_rust::SevenZReader::open(path, pw)
-            .map_err(|e| ArchiveError::FormatError(format!("{}", e)))?;
+        let mut sz =
+            sevenz_rust::SevenZReader::open(path, pw).map_err(|e| ArchiveError::FormatError(format!("{}", e)))?;
 
         let mut found_data: Option<Vec<u8>> = None;
         let target = entry_name.to_string();
@@ -110,14 +103,9 @@ impl ArchiveHandler for SevenZHandler {
         found_data.ok_or_else(|| ArchiveError::EntryNotFound(entry_name.to_string()))
     }
 
-    fn create(
-        &self,
-        archive_path: &Path,
-        sources: &[PathBuf],
-        _password: Option<&str>,
-    ) -> Result<()> {
-        let mut sz = sevenz_rust::SevenZWriter::create(archive_path)
-            .map_err(|e| ArchiveError::FormatError(e.to_string()))?;
+    fn create(&self, archive_path: &Path, sources: &[PathBuf], _password: Option<&str>) -> Result<()> {
+        let mut sz =
+            sevenz_rust::SevenZWriter::create(archive_path).map_err(|e| ArchiveError::FormatError(e.to_string()))?;
 
         for source in sources {
             if source.is_dir() {
@@ -132,47 +120,28 @@ impl ArchiveHandler for SevenZHandler {
 
                     if entry.file_type().is_dir() {
                         if !rel.is_empty() {
-                            sz.push_archive_entry::<&[u8]>(
-                                make_entry(format!("{}/", rel), true),
-                                None,
-                            )
-                            .map_err(|e| ArchiveError::FormatError(e.to_string()))?;
+                            sz.push_archive_entry::<&[u8]>(make_entry(format!("{}/", rel), true), None)
+                                .map_err(|e| ArchiveError::FormatError(e.to_string()))?;
                         }
                     } else {
                         let data = fs::read(fpath)?;
-                        sz.push_archive_entry(
-                            make_entry(rel, false),
-                            Some(data.as_slice()),
-                        )
-                        .map_err(|e| ArchiveError::FormatError(e.to_string()))?;
+                        sz.push_archive_entry(make_entry(rel, false), Some(data.as_slice()))
+                            .map_err(|e| ArchiveError::FormatError(e.to_string()))?;
                     }
                 }
             } else {
-                let name = source
-                    .file_name()
-                    .unwrap_or_default()
-                    .to_string_lossy()
-                    .to_string();
+                let name = source.file_name().unwrap_or_default().to_string_lossy().to_string();
                 let data = fs::read(source)?;
-                sz.push_archive_entry(
-                    make_entry(name, false),
-                    Some(data.as_slice()),
-                )
-                .map_err(|e| ArchiveError::FormatError(e.to_string()))?;
+                sz.push_archive_entry(make_entry(name, false), Some(data.as_slice()))
+                    .map_err(|e| ArchiveError::FormatError(e.to_string()))?;
             }
         }
 
-        sz.finish()
-            .map_err(|e| ArchiveError::FormatError(e.to_string()))?;
+        sz.finish().map_err(|e| ArchiveError::FormatError(e.to_string()))?;
         Ok(())
     }
 
-    fn add(
-        &self,
-        archive_path: &Path,
-        sources: &[PathBuf],
-        password: Option<&str>,
-    ) -> Result<()> {
+    fn add(&self, archive_path: &Path, sources: &[PathBuf], password: Option<&str>) -> Result<()> {
         // Extract to temp dir, add new files, recreate
         let temp_dir = tempfile::tempdir()?;
         self.extract_all(archive_path, temp_dir.path(), password)?;
@@ -180,14 +149,10 @@ impl ArchiveHandler for SevenZHandler {
         // Copy new sources into temp dir
         for source in sources {
             if source.is_dir() {
-                let dest = temp_dir
-                    .path()
-                    .join(source.file_name().unwrap_or_default());
+                let dest = temp_dir.path().join(source.file_name().unwrap_or_default());
                 copy_dir_recursive(source, &dest)?;
             } else {
-                let dest = temp_dir
-                    .path()
-                    .join(source.file_name().unwrap_or_default());
+                let dest = temp_dir.path().join(source.file_name().unwrap_or_default());
                 fs::copy(source, &dest)?;
             }
         }
@@ -199,8 +164,8 @@ impl ArchiveHandler for SevenZHandler {
             .collect();
 
         // Recreate archive
-        let mut sz = sevenz_rust::SevenZWriter::create(archive_path)
-            .map_err(|e| ArchiveError::FormatError(e.to_string()))?;
+        let mut sz =
+            sevenz_rust::SevenZWriter::create(archive_path).map_err(|e| ArchiveError::FormatError(e.to_string()))?;
 
         for item in &items {
             if item.is_dir() {
@@ -214,19 +179,13 @@ impl ArchiveHandler for SevenZHandler {
 
                     if entry.file_type().is_dir() {
                         if !rel.is_empty() {
-                            sz.push_archive_entry::<&[u8]>(
-                                make_entry(format!("{}/", rel), true),
-                                None,
-                            )
-                            .map_err(|e| ArchiveError::FormatError(e.to_string()))?;
+                            sz.push_archive_entry::<&[u8]>(make_entry(format!("{}/", rel), true), None)
+                                .map_err(|e| ArchiveError::FormatError(e.to_string()))?;
                         }
                     } else {
                         let data = fs::read(fpath)?;
-                        sz.push_archive_entry(
-                            make_entry(rel, false),
-                            Some(data.as_slice()),
-                        )
-                        .map_err(|e| ArchiveError::FormatError(e.to_string()))?;
+                        sz.push_archive_entry(make_entry(rel, false), Some(data.as_slice()))
+                            .map_err(|e| ArchiveError::FormatError(e.to_string()))?;
                     }
                 }
             } else {
@@ -236,16 +195,12 @@ impl ArchiveHandler for SevenZHandler {
                     .to_string_lossy()
                     .replace('\\', "/");
                 let data = fs::read(item)?;
-                sz.push_archive_entry(
-                    make_entry(name, false),
-                    Some(data.as_slice()),
-                )
-                .map_err(|e| ArchiveError::FormatError(e.to_string()))?;
+                sz.push_archive_entry(make_entry(name, false), Some(data.as_slice()))
+                    .map_err(|e| ArchiveError::FormatError(e.to_string()))?;
             }
         }
 
-        sz.finish()
-            .map_err(|e| ArchiveError::FormatError(e.to_string()))?;
+        sz.finish().map_err(|e| ArchiveError::FormatError(e.to_string()))?;
         Ok(())
     }
 

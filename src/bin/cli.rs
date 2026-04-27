@@ -73,9 +73,7 @@ enum Commands {
         parts: Vec<PathBuf>,
     },
     /// Detect archive format
-    Detect {
-        path: PathBuf,
-    },
+    Detect { path: PathBuf },
 }
 
 fn main() {
@@ -83,9 +81,7 @@ fn main() {
 
     let result = match cli.command {
         Commands::List { path, password } => {
-            let opts = password.map(|p| OpenOptions {
-                password: Some(p),
-            });
+            let opts = password.map(|p| OpenOptions { password: Some(p) });
             match archiver::list(&path, opts.as_ref()) {
                 Ok(entries) => {
                     println!(
@@ -111,16 +107,9 @@ fn main() {
                 Err(e) => Err(e),
             }
         }
-        Commands::Extract {
-            path,
-            dest,
-            password,
-        } => {
-            let opts = password.map(|p| OpenOptions {
-                password: Some(p),
-            });
-            archiver::extract_all(&path, &dest, opts.as_ref())
-                .map(|_| println!("✓ Extracted to {}", dest.display()))
+        Commands::Extract { path, dest, password } => {
+            let opts = password.map(|p| OpenOptions { password: Some(p) });
+            archiver::extract_all(&path, &dest, opts.as_ref()).map(|_| println!("✓ Extracted to {}", dest.display()))
         }
         Commands::ExtractFile {
             path,
@@ -128,20 +117,12 @@ fn main() {
             dest,
             password,
         } => {
-            let opts = password.map(|p| OpenOptions {
-                password: Some(p),
-            });
+            let opts = password.map(|p| OpenOptions { password: Some(p) });
             archiver::extract_file(&path, &entry, &dest, opts.as_ref())
                 .map(|_| println!("✓ Extracted '{}' to {}", entry, dest.display()))
         }
-        Commands::Preview {
-            path,
-            entry,
-            password,
-        } => {
-            let opts = password.map(|p| OpenOptions {
-                password: Some(p),
-            });
+        Commands::Preview { path, entry, password } => {
+            let opts = password.map(|p| OpenOptions { password: Some(p) });
             match archiver::preview(&path, &entry, opts.as_ref()) {
                 Ok(data) => {
                     match String::from_utf8(data.clone()) {
@@ -171,8 +152,7 @@ fn main() {
                 password: Some(p),
                 ..Default::default()
             });
-            archiver::create(&output, &sources, opts.as_ref())
-                .map(|_| println!("✓ Created {}", output.display()))
+            archiver::create(&output, &sources, opts.as_ref()).map(|_| println!("✓ Created {}", output.display()))
         }
         Commands::Add {
             path,
@@ -183,14 +163,9 @@ fn main() {
                 password: Some(p),
                 ..Default::default()
             });
-            archiver::add(&path, &sources, opts.as_ref())
-                .map(|_| println!("✓ Added files to {}", path.display()))
+            archiver::add(&path, &sources, opts.as_ref()).map(|_| println!("✓ Added files to {}", path.display()))
         }
-        Commands::Split {
-            path,
-            size,
-            output_dir,
-        } => match archiver::split_archive(&path, size, &output_dir) {
+        Commands::Split { path, size, output_dir } => match archiver::split_archive(&path, size, &output_dir) {
             Ok(parts) => {
                 println!("✓ Split into {} parts:", parts.len());
                 for p in &parts {
@@ -200,8 +175,9 @@ fn main() {
             }
             Err(e) => Err(e),
         },
-        Commands::Merge { output, parts } => archiver::merge_parts(&parts, &output)
-            .map(|_| println!("✓ Merged into {}", output.display())),
+        Commands::Merge { output, parts } => {
+            archiver::merge_parts(&parts, &output).map(|_| println!("✓ Merged into {}", output.display()))
+        }
         Commands::Detect { path } => match archiver::detect(&path) {
             Ok(format) => {
                 println!("Detected format: {}", format);

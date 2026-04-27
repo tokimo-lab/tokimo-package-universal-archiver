@@ -2,10 +2,10 @@ use std::fs::{self, File};
 use std::io::{Cursor, Read};
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
+use zip::CompressionMethod;
 use zip::read::ZipArchive;
 use zip::unstable::write::FileOptionsExt;
 use zip::write::{SimpleFileOptions, ZipWriter};
-use zip::CompressionMethod;
 
 use crate::error::{ArchiveError, Result};
 use crate::types::EntryInfo;
@@ -36,11 +36,7 @@ impl ZipHandler {
                     }
                 }
             } else {
-                let name = source
-                    .file_name()
-                    .unwrap_or_default()
-                    .to_string_lossy()
-                    .to_string();
+                let name = source.file_name().unwrap_or_default().to_string_lossy().to_string();
                 files.push((source.clone(), name));
             }
         }
@@ -51,8 +47,7 @@ impl ZipHandler {
 impl ArchiveHandler for ZipHandler {
     fn list(&self, path: &Path, _password: Option<&str>) -> Result<Vec<EntryInfo>> {
         let file = File::open(path)?;
-        let mut archive =
-            ZipArchive::new(file).map_err(|e| ArchiveError::FormatError(e.to_string()))?;
+        let mut archive = ZipArchive::new(file).map_err(|e| ArchiveError::FormatError(e.to_string()))?;
         let mut entries = Vec::new();
 
         for i in 0..archive.len() {
@@ -74,8 +69,7 @@ impl ArchiveHandler for ZipHandler {
 
     fn extract_all(&self, path: &Path, dest: &Path, password: Option<&str>) -> Result<()> {
         let file = File::open(path)?;
-        let mut archive =
-            ZipArchive::new(file).map_err(|e| ArchiveError::FormatError(e.to_string()))?;
+        let mut archive = ZipArchive::new(file).map_err(|e| ArchiveError::FormatError(e.to_string()))?;
 
         fs::create_dir_all(dest)?;
 
@@ -106,13 +100,7 @@ impl ArchiveHandler for ZipHandler {
         Ok(())
     }
 
-    fn extract_file(
-        &self,
-        path: &Path,
-        entry_name: &str,
-        dest: &Path,
-        password: Option<&str>,
-    ) -> Result<()> {
+    fn extract_file(&self, path: &Path, entry_name: &str, dest: &Path, password: Option<&str>) -> Result<()> {
         let data = self.preview(path, entry_name, password)?;
         let out_path = dest.join(entry_name);
         if let Some(parent) = out_path.parent() {
@@ -124,8 +112,7 @@ impl ArchiveHandler for ZipHandler {
 
     fn preview(&self, path: &Path, entry_name: &str, password: Option<&str>) -> Result<Vec<u8>> {
         let file = File::open(path)?;
-        let mut archive =
-            ZipArchive::new(file).map_err(|e| ArchiveError::FormatError(e.to_string()))?;
+        let mut archive = ZipArchive::new(file).map_err(|e| ArchiveError::FormatError(e.to_string()))?;
 
         let mut entry = if let Some(pw) = password {
             archive
@@ -142,12 +129,7 @@ impl ArchiveHandler for ZipHandler {
         Ok(buf)
     }
 
-    fn create(
-        &self,
-        archive_path: &Path,
-        sources: &[PathBuf],
-        password: Option<&str>,
-    ) -> Result<()> {
+    fn create(&self, archive_path: &Path, sources: &[PathBuf], password: Option<&str>) -> Result<()> {
         let file = File::create(archive_path)?;
         let mut zip = ZipWriter::new(file);
 
@@ -173,20 +155,14 @@ impl ArchiveHandler for ZipHandler {
             }
         }
 
-        zip.finish()
-            .map_err(|e| ArchiveError::FormatError(e.to_string()))?;
+        zip.finish().map_err(|e| ArchiveError::FormatError(e.to_string()))?;
         Ok(())
     }
 
-    fn add(
-        &self,
-        archive_path: &Path,
-        sources: &[PathBuf],
-        password: Option<&str>,
-    ) -> Result<()> {
+    fn add(&self, archive_path: &Path, sources: &[PathBuf], password: Option<&str>) -> Result<()> {
         let old_data = fs::read(archive_path)?;
-        let mut old_archive = ZipArchive::new(Cursor::new(&old_data))
-            .map_err(|e| ArchiveError::FormatError(e.to_string()))?;
+        let mut old_archive =
+            ZipArchive::new(Cursor::new(&old_data)).map_err(|e| ArchiveError::FormatError(e.to_string()))?;
 
         let file = File::create(archive_path)?;
         let mut zip = ZipWriter::new(file);
@@ -222,8 +198,7 @@ impl ArchiveHandler for ZipHandler {
             }
         }
 
-        zip.finish()
-            .map_err(|e| ArchiveError::FormatError(e.to_string()))?;
+        zip.finish().map_err(|e| ArchiveError::FormatError(e.to_string()))?;
         Ok(())
     }
 

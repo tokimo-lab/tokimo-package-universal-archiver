@@ -27,9 +27,9 @@
 
 pub mod detect;
 pub mod error;
+mod formats;
 pub mod split;
 pub mod types;
-mod formats;
 
 use std::path::{Path, PathBuf};
 
@@ -68,11 +68,7 @@ pub fn list(path: impl AsRef<Path>, opts: Option<&OpenOptions>) -> Result<Vec<En
 }
 
 /// Extract all files from an archive
-pub fn extract_all(
-    path: impl AsRef<Path>,
-    dest: impl AsRef<Path>,
-    opts: Option<&OpenOptions>,
-) -> Result<()> {
+pub fn extract_all(path: impl AsRef<Path>, dest: impl AsRef<Path>, opts: Option<&OpenOptions>) -> Result<()> {
     let path = path.as_ref();
     let format = detect::detect_format(path)?;
     let handler = get_handler(format);
@@ -95,11 +91,7 @@ pub fn extract_file(
 }
 
 /// Preview (read into memory) a single file from an archive
-pub fn preview(
-    path: impl AsRef<Path>,
-    entry: &str,
-    opts: Option<&OpenOptions>,
-) -> Result<Vec<u8>> {
+pub fn preview(path: impl AsRef<Path>, entry: &str, opts: Option<&OpenOptions>) -> Result<Vec<u8>> {
     let path = path.as_ref();
     let format = detect::detect_format(path)?;
     let handler = get_handler(format);
@@ -108,11 +100,7 @@ pub fn preview(
 }
 
 /// Create a new archive from source files/directories
-pub fn create(
-    archive_path: impl AsRef<Path>,
-    sources: &[PathBuf],
-    opts: Option<&CreateOptions>,
-) -> Result<()> {
+pub fn create(archive_path: impl AsRef<Path>, sources: &[PathBuf], opts: Option<&CreateOptions>) -> Result<()> {
     let archive_path = archive_path.as_ref();
     let format = detect::detect_format(archive_path)?;
     let handler = get_handler(format);
@@ -121,11 +109,7 @@ pub fn create(
 }
 
 /// Add files to an existing archive
-pub fn add(
-    archive_path: impl AsRef<Path>,
-    sources: &[PathBuf],
-    opts: Option<&CreateOptions>,
-) -> Result<()> {
+pub fn add(archive_path: impl AsRef<Path>, sources: &[PathBuf], opts: Option<&CreateOptions>) -> Result<()> {
     let archive_path = archive_path.as_ref();
     let format = detect::detect_format(archive_path)?;
     let handler = get_handler(format);
@@ -134,11 +118,7 @@ pub fn add(
 }
 
 /// Split an archive file into parts of specified size
-pub fn split_archive(
-    path: impl AsRef<Path>,
-    chunk_size: u64,
-    output_dir: impl AsRef<Path>,
-) -> Result<Vec<PathBuf>> {
+pub fn split_archive(path: impl AsRef<Path>, chunk_size: u64, output_dir: impl AsRef<Path>) -> Result<Vec<PathBuf>> {
     split::split_file(path.as_ref(), chunk_size, output_dir.as_ref())
 }
 

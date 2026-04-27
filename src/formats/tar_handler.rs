@@ -41,16 +41,10 @@ impl TarHandler {
                 decoder.read_to_end(&mut data)?;
             }
             ArchiveFormat::TarZst => {
-                let mut decoder =
-                    zstd::Decoder::new(reader).map_err(|e| ArchiveError::FormatError(e.to_string()))?;
+                let mut decoder = zstd::Decoder::new(reader).map_err(|e| ArchiveError::FormatError(e.to_string()))?;
                 decoder.read_to_end(&mut data)?;
             }
-            _ => {
-                return Err(ArchiveError::UnsupportedFormat(format!(
-                    "{}",
-                    self.format
-                )))
-            }
+            _ => return Err(ArchiveError::UnsupportedFormat(format!("{}", self.format))),
         }
 
         Ok(data)
@@ -63,15 +57,13 @@ impl TarHandler {
             }
             ArchiveFormat::TarGz => {
                 let file = File::create(output)?;
-                let mut encoder =
-                    flate2::write::GzEncoder::new(file, flate2::Compression::default());
+                let mut encoder = flate2::write::GzEncoder::new(file, flate2::Compression::default());
                 encoder.write_all(tar_data)?;
                 encoder.finish()?;
             }
             ArchiveFormat::TarBz2 => {
                 let file = File::create(output)?;
-                let mut encoder =
-                    bzip2::write::BzEncoder::new(file, bzip2::Compression::default());
+                let mut encoder = bzip2::write::BzEncoder::new(file, bzip2::Compression::default());
                 encoder.write_all(tar_data)?;
                 encoder.finish()?;
             }
@@ -83,17 +75,11 @@ impl TarHandler {
             }
             ArchiveFormat::TarZst => {
                 let file = File::create(output)?;
-                let mut encoder = zstd::Encoder::new(file, 3)
-                    .map_err(|e| ArchiveError::FormatError(e.to_string()))?;
+                let mut encoder = zstd::Encoder::new(file, 3).map_err(|e| ArchiveError::FormatError(e.to_string()))?;
                 encoder.write_all(tar_data)?;
                 encoder.finish()?;
             }
-            _ => {
-                return Err(ArchiveError::UnsupportedFormat(format!(
-                    "{}",
-                    self.format
-                )))
-            }
+            _ => return Err(ArchiveError::UnsupportedFormat(format!("{}", self.format))),
         }
         Ok(())
     }
@@ -113,11 +99,7 @@ impl TarHandler {
                     files.push((path, rel));
                 }
             } else {
-                let name = source
-                    .file_name()
-                    .unwrap_or_default()
-                    .to_string_lossy()
-                    .to_string();
+                let name = source.file_name().unwrap_or_default().to_string_lossy().to_string();
                 files.push((source.clone(), name));
             }
         }
@@ -170,13 +152,7 @@ impl ArchiveHandler for TarHandler {
         Ok(())
     }
 
-    fn extract_file(
-        &self,
-        path: &Path,
-        entry_name: &str,
-        dest: &Path,
-        password: Option<&str>,
-    ) -> Result<()> {
+    fn extract_file(&self, path: &Path, entry_name: &str, dest: &Path, password: Option<&str>) -> Result<()> {
         let data = self.preview(path, entry_name, password)?;
         let out_path = dest.join(entry_name);
         if let Some(parent) = out_path.parent() {
@@ -213,12 +189,7 @@ impl ArchiveHandler for TarHandler {
         Err(ArchiveError::EntryNotFound(entry_name.to_string()))
     }
 
-    fn create(
-        &self,
-        archive_path: &Path,
-        sources: &[PathBuf],
-        _password: Option<&str>,
-    ) -> Result<()> {
+    fn create(&self, archive_path: &Path, sources: &[PathBuf], _password: Option<&str>) -> Result<()> {
         let mut tar_data = Vec::new();
         {
             let mut builder = TarBuilder::new(&mut tar_data);
@@ -237,21 +208,14 @@ impl ArchiveHandler for TarHandler {
                 }
             }
 
-            builder
-                .finish()
-                .map_err(|e| ArchiveError::FormatError(e.to_string()))?;
+            builder.finish().map_err(|e| ArchiveError::FormatError(e.to_string()))?;
         }
 
         self.compress_tar(&tar_data, archive_path)?;
         Ok(())
     }
 
-    fn add(
-        &self,
-        archive_path: &Path,
-        sources: &[PathBuf],
-        _password: Option<&str>,
-    ) -> Result<()> {
+    fn add(&self, archive_path: &Path, sources: &[PathBuf], _password: Option<&str>) -> Result<()> {
         // Read existing tar data
         let existing_data = self.decompress_to_tar(archive_path)?;
 
@@ -300,9 +264,7 @@ impl ArchiveHandler for TarHandler {
                 }
             }
 
-            builder
-                .finish()
-                .map_err(|e| ArchiveError::FormatError(e.to_string()))?;
+            builder.finish().map_err(|e| ArchiveError::FormatError(e.to_string()))?;
         }
 
         self.compress_tar(&tar_data, archive_path)?;
