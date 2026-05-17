@@ -23,7 +23,8 @@ impl ArchiveHandler for SevenZHandler {
             .map(sevenz_rust2::Password::from)
             .unwrap_or_else(sevenz_rust2::Password::empty);
 
-        let sz = sevenz_rust2::ArchiveReader::open(path, pw).map_err(|e| ArchiveError::FormatError(format!("{}", e)))?;
+        let sz =
+            sevenz_rust2::ArchiveReader::open(path, pw).map_err(|e| ArchiveError::FormatError(format!("{}", e)))?;
 
         let mut entries = Vec::new();
         for entry in sz.archive().files.iter() {
