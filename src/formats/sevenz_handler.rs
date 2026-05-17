@@ -10,10 +10,11 @@ use super::ArchiveHandler;
 pub struct SevenZHandler;
 
 fn make_entry(name: String, is_dir: bool) -> sevenz_rust2::ArchiveEntry {
-    let mut e = sevenz_rust2::ArchiveEntry::default();
-    e.name = name;
-    e.is_directory = is_dir;
-    e
+    sevenz_rust2::ArchiveEntry {
+        name,
+        is_directory: is_dir,
+        ..Default::default()
+    }
 }
 
 impl ArchiveHandler for SevenZHandler {
